@@ -17,42 +17,49 @@ class PlayerMind(
 
   var weapon: Weapon = new PeaShooterWeapon(1000)
   var thrustMind = new ProjectileMind()
+  var frozen: Long = 0
+  var jellied: Long = 0
 
 
   override def think(monster: Monster, delta: Long, level: LevelState, width: Int, height: Int): Boolean = {
 
-    val dx = monster.positionX - this.input.positionX
-    val dy = monster.positionY - this.input.positionY
-    val angle = Math.atan2(dy, dx)
+    frozen -= delta
+    jellied -= delta
+    if( frozen <= 0 ) {
 
-    val d = (Math.sqrt(dx*dx + dy*dy) * delta) / 2000
+      val dx = monster.positionX - this.input.positionX
+      val dy = monster.positionY - this.input.positionY
+      val angle = Math.atan2(dy, dx)
 
-    var progress = d
-    while( progress > 0 ) {
-      progress -= 1
-      val ddx = ((progress / d) * dx).toInt
-      val ddy = ((progress / d) * dy).toInt
-      val thrust = new Monster(
-        MonsterType.Thrust,
-        thrustMind,
-        monster.positionX + ddx,
-        monster.positionY + ddy,
-        0,
-        -1
-      )
-      thrust.activity = new ProjectileActivity(
-        0.005 - Math.random() * 0.01,
-        angle,
-        0.1 + Math.random() * 0.1,
-        1
-      )
-      level.particles += thrust
+      val d = (Math.sqrt(dx * dx + dy * dy) * delta) / 2000
+
+      var progress = d
+      while (progress > 0) {
+        progress -= 1
+        val ddx = ((progress / d) * dx).toInt
+        val ddy = ((progress / d) * dy).toInt
+        val thrust = new Monster(
+          MonsterType.Thrust,
+          thrustMind,
+          monster.positionX + ddx,
+          monster.positionY + ddy,
+          0,
+          -1
+        )
+        thrust.activity = new ProjectileActivity(
+          0.005 - Math.random() * 0.01,
+          angle,
+          0.1 + Math.random() * 0.1,
+          1
+        )
+        level.particles += thrust
+      }
+
+      monster.positionX = this.input.positionX
+      monster.positionY = this.input.positionY
     }
 
-    monster.positionX = this.input.positionX
-    monster.positionY = this.input.positionY
-
-    if( this.weapon != null ) {
+    if( this.weapon != null && this.jellied <= 0 ) {
       val angle = input.personalizationImageAngle - Math.PI/2
       val sin = Math.sin(angle)
       val cos = Math.cos(angle)
@@ -81,9 +88,29 @@ class PlayerMind(
           level.oxygen -= 5 * projectileActivity.toughness
           damageSoundEffect.play()
       }
+    } else if( collidedWith.monsterType == MonsterType.Jelly ) {
+      val activity = collidedWith.activity
+      activity match {
+        case projectileActivity: ProjectileActivity =>
+          this.jellied = Math.max(0, this.jellied) + monster.radius * 100
+          damageSoundEffect.play()
+      }
     } else if( collidedWith.monsterType == MonsterType.PowerUpOxygen ) {
       level.oxygen = Math.min(level.oxygen + 40, level.maximumOxygen)
       powerUpSoundEffect.play()
+    } else if( collidedWith.monsterType == MonsterType.PowerUpFreeze ) {
+      damageSoundEffect.play()
+      frozen = 6000;
+    } else {
+      powerUpSoundEffect.play()
+      weapon match {
+        case peaShooter: PeaShooterWeapon =>
+          if (collidedWith.monsterType == MonsterType.PowerUpRapid) {
+            peaShooter.boost()
+          } else if (collidedWith.monsterType == MonsterType.PowerUpSpread) {
+            peaShooter.spread()
+          }
+      }
     }
     return false;
   }

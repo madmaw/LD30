@@ -21,7 +21,9 @@ class PlayerRenderer(
   val legsJoint: Point,
   val gunImage: Image,
   val gunImageJoint: Point,
-  val gunJoint: Point
+  val gunJoint: Point,
+  val jellyImage: Image,
+  val jellyJoint: Point
 ) extends MonsterRenderer {
 
   override def render(graphics: Graphics2D, monster: Monster): Unit = {
@@ -117,17 +119,22 @@ class PlayerRenderer(
           null
         )
 
+        if( playerMind.jellied > 0 ) {
+          val s = (playerMind.jellied * 2D) / (this.jellyImage.getWidth(null).toDouble * 100)
+          graphics.drawImage(
+            this.jellyImage,
+            (monster.positionX - this.jellyJoint.x * s).toInt,
+            (monster.positionY - 40 - this.jellyJoint.y * s).toInt,
+            (s * this.jellyImage.getWidth(null)).toInt,
+            (s * this.jellyImage.getHeight(null)).toInt,
+            null
+          )
+        }
+
+
 
     }
 
-
-    graphics.setColor(Color.WHITE)
-    graphics.drawOval(
-      monster.positionX - monster.radius,
-      monster.positionY - monster.radius,
-      monster.radius * 2,
-      monster.radius * 2
-    )
 
   }
 

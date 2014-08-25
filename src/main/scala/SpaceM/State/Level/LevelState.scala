@@ -5,9 +5,11 @@ import java.util
 
 import SpaceM.Driver.Driver
 import SpaceM.SoundEffect
+import SpaceM.State.Menu.MenuState
 import SpaceM.State.State
 
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.parallel.mutable
 
 /**
  * Created by chris on 23/08/14.
@@ -31,12 +33,14 @@ class LevelState(
   var oxygen: Double = 0
   var paused: Boolean = true;
   var gameOverState: State = null;
+  var menuState: MenuState = null
   var distance: Double = 0
 
   val damageSoundEffect = new SoundEffect(Array("damage1.wav","damage2.wav", "damage3.wav", "damage4.wav"))
   val fireSoundEffect = new SoundEffect(Array("shoot3.wav", "shoot2.wav", "shoot1.wav", "shoot4.wav"))
   val powerUpSoundEffect = new SoundEffect(Array("powerup1.wav"))
 
+  val playerMinds = new util.HashMap[Int, Mind]()
 
   override def init(): Unit = {
     // check players
@@ -48,6 +52,7 @@ class LevelState(
     this.enemies.clear()
     this.powerUps.clear()
     this.particles.clear()
+    this.playerMinds.clear()
   }
 
   def checkPlayers(delta: Long): Boolean = {
@@ -75,7 +80,11 @@ class LevelState(
       }
       if( !found ) {
         // add it
-        val mind = new PlayerMind(input, damageSoundEffect, fireSoundEffect, powerUpSoundEffect)
+        var mind = this.playerMinds.get(id)
+        if( mind == null ) {
+          mind = new PlayerMind(input, damageSoundEffect, fireSoundEffect, powerUpSoundEffect)
+          this.playerMinds.put(id, mind);
+        }
         val player = new Monster(
           MonsterType.Player,
           mind,
@@ -97,7 +106,7 @@ class LevelState(
       val newMonsters = enemySpawner.accumulate(delta, this, width, height)
       if( newMonsters != null ) {
         for( monster <- newMonsters ) {
-          if( monster.monsterType == MonsterType.PowerUpOxygen ) {
+          if( monster.monsterType == MonsterType.PowerUpOxygen || monster.monsterType == MonsterType.PowerUpFreeze || monster.monsterType == MonsterType.PowerUpRapid || monster.monsterType == MonsterType.PowerUpSpread ) {
             this.powerUps += monster;
           } else {
             this.enemies += monster;
@@ -128,6 +137,9 @@ class LevelState(
 
       return this
     } else {
+      if( this.menuState != null ) {
+        this.menuState.setScore(this.distance.toInt)
+      }
       return this.gameOverState
     }
   }

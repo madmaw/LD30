@@ -24,6 +24,15 @@ class MenuState(
   var inputs: Map[Int, Input] = null;
 
   var centerAge: Long = 0
+  var score: Integer = null
+  var highScore: Integer = null
+
+  def setScore(score: Int): Unit = {
+    this.score = score
+    if( this.highScore == null || this.highScore < score ) {
+      this.highScore = score;
+    }
+  }
 
   override def init(): Unit = {
     centerAge = 0
@@ -78,6 +87,12 @@ class MenuState(
       y += bounds.getHeight.toInt;
     }
 
+    if( this.highScore != null ) {
+      graphics.drawString("HIGH " +this.highScore.toString, 20, 100)
+    }
+    if( this.score != null ) {
+      graphics.drawString("SCORE "+this.score.toString, 20, 140)
+    }
 
 
     val cx = width / 2

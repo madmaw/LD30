@@ -41,7 +41,19 @@ class ProjectileMind(
   }
 
   override def collision(monster: Monster, collidedWith: Monster, level: LevelState): Boolean = {
-
-    return true;
+    if( monster.monsterType == MonsterType.Jelly ) {
+      monster.activity match {
+        case projectileActivity: ProjectileActivity =>
+          projectileActivity.toughness -= 1
+          if( projectileActivity.toughness > 0 ) {
+            monster.radius = (monster.radius * projectileActivity.toughness) / (projectileActivity.toughness+1)
+            return false
+          } else {
+            return true;
+          }
+      }
+    } else {
+      return true;
+    }
   }
 }

@@ -76,6 +76,17 @@ object Main {
     val bulletImage1 = ImageIO.read(getClass.getResource("bullet.png"))
     val bulletImage2 = ImageIO.read(getClass.getResource("bullet2.png"))
     val bulletImage3 = ImageIO.read(getClass.getResource("bullet3.png"))
+    val freezeImage = ImageIO.read(getClass.getResource("freeze.png"))
+    val spreadImage = ImageIO.read(getClass.getResource("spread.png"))
+    val rapidImage = ImageIO.read(getClass.getResource("rapid.png"))
+    val jellyImage1 = ImageIO.read(getClass.getResource("jelly1.png"))
+    val jellyImage2 = ImageIO.read(getClass.getResource("jelly2.png"))
+    val jellyImage3 = ImageIO.read(getClass.getResource("jelly3.png"))
+    val jellyImage4 = ImageIO.read(getClass.getResource("jelly4.png"))
+    val jellyImage5 = ImageIO.read(getClass.getResource("jelly5.png"))
+    val jellyImage6 = ImageIO.read(getClass.getResource("jelly6.png"))
+    val jellyImage7 = ImageIO.read(getClass.getResource("jelly7.png"))
+    val jellyImage8 = ImageIO.read(getClass.getResource("jelly8.png"))
 
     val faceDetector = new CascadeClassifier(toFile("opencv/haarcascade_frontalface_default.xml").getAbsolutePath)
     val leftEyeDetector = new CascadeClassifier(toFile("opencv/haarcascade_mcs_lefteye.xml").getAbsolutePath)
@@ -110,6 +121,7 @@ object Main {
     )
     openCVDriver.start();
 
+    val jellyPoint = new Point(jellyImage1.getWidth/2, jellyImage1.getHeight/4)
     val playerHeadRenderRadius = 40;
     val playerHeadRadius = bodyImage.getWidth()/4
     val playerRenderer = new PlayerRenderer(
@@ -127,16 +139,35 @@ object Main {
       new Point((bodyImage.getWidth()/2).toInt, (bodyImage.getHeight()/1.4).toInt),
       gunImage,
       new Point((gunImage.getWidth * 0.9).toInt, (gunImage.getHeight * 0.7).toInt),
-      new Point(bodyImage.getWidth()/2, (bodyImage.getHeight()/3.3).toInt)
+      new Point(bodyImage.getWidth()/2, (bodyImage.getHeight()/3.3).toInt),
+      jellyImage1,
+      jellyPoint
     )
     val oxygenRenderer = new PowerUpRenderer(
       powerUpOxygenImage,
       new Point(powerUpOxygenImage.getWidth / 2, powerUpOxygenImage.getHeight/2)
     )
+    val freezeRenderer = new PowerUpRenderer(
+      freezeImage,
+      new Point(freezeImage.getWidth / 2, freezeImage.getHeight/2)
+    )
+    val rapidRenderer = new PowerUpRenderer(
+      rapidImage,
+      new Point(rapidImage.getWidth / 2, rapidImage.getHeight/2)
+    )
+    val spreadRenderer = new PowerUpRenderer(
+      spreadImage,
+      new Point(spreadImage.getWidth / 2, spreadImage.getHeight/2)
+    )
     val bulletRenderer = new BulletRenderer(
       Array(bulletImage1, bulletImage2, bulletImage3),
       new Point(bulletImage1.getWidth/2, bulletImage1.getHeight/2),
       80
+    )
+    val jellyRenderer = new BulletRenderer(
+      Array(jellyImage1, jellyImage2, jellyImage3, jellyImage4, jellyImage5, jellyImage6, jellyImage7, jellyImage8),
+      jellyPoint,
+      200
     )
     val thrustRenderer = new ThrustRenderer(
       thrustImage,
@@ -148,7 +179,11 @@ object Main {
       new HardCodedSpaceMonsterSpawner(Math.max(powerUpOxygenImage.getWidth(), powerUpOxygenImage.getHeight())/2),
       new HardCodedRendererFactory(
         playerRenderer,
+        jellyRenderer,
         oxygenRenderer,
+        freezeRenderer,
+        spreadRenderer,
+        rapidRenderer,
         bulletRenderer,
         thrustRenderer,
         circleRenderer
@@ -170,6 +205,7 @@ object Main {
       new Point(bodyImage.getWidth()/2, (bodyImage.getHeight()/3.3).toInt)
     )
 
+    spaceLevelState.menuState = menuState
     spaceLevelState.gameOverState = new FadeOutStateProxy(
       menuState,
       1000

@@ -5,5 +5,5 @@ package SpaceM.State.Level
  */
 object MonsterType extends Enumeration {
   type MonsterType = Value
-  val Player, Asteroid, Bullet, PowerUpOxygen, Fragment, Thrust = Value
+  val Player, Asteroid, Jelly, Bullet, PowerUpOxygen, Fragment, Thrust, PowerUpRapid, PowerUpSpread, PowerUpFreeze = Value
 }
